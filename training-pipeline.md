@@ -177,5 +177,6 @@ PHASE 3: COMPUTER USE SPECIALIZATION     [Thousands of VM rollouts]
 - [On the Interplay of Pre-Training, Mid-Training, and RL (Dec 2025)](https://arxiv.org/abs/2512.07783)
 - [Anthropic, "Developing a computer use model"](https://www.anthropic.com/news/developing-computer-use)
 - [Anthropic, "Constitutional AI: Harmlessness from AI Feedback" (Dec 2022)](https://arxiv.org/abs/2212.08073)
-- [Anthropic, Claude 3 Model Card](https://www-cdn.anthropic.com/de8ba9b01c9ab7cbabf5c33b80b7bbc618857627/Model_Card_Claude_3.pdf)
+- [Anthropic, Claude 4 System Card](https://www.anthropic.com/claude-4-system-card)
+- [Anthropic, Claude Opus 4.5 System Card](https://www.anthropic.com/claude-opus-4-5-system-card)
 - [OpenAI, "Computer-Using Agent"](https://openai.com/index/computer-using-agent/)

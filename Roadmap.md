@@ -48,7 +48,8 @@ Here's the absolute essentials, in reading order:
 
 3. **Anthropic — "Core Views on AI Safety"** + the training/RLHF technical blog posts. Anthropic's blog has some of the clearest writing on constitutional AI, RLHF, and post-training alignment. In particular:
    - [Constitutional AI: Harmlessness from AI Feedback](https://arxiv.org/abs/2212.08073) — how to do RLHF without human preference labels for harmlessness, using AI-generated critiques instead
-   - [The Claude 3 Model Card](https://www-cdn.anthropic.com/de8ba9b01c9ab7cbabf5c33b80b7bbc618857627/Model_Card_Claude_3.pdf) — detailed breakdown of post-training RL, how it shapes behavior at the frontier, and the interplay between helpfulness and safety objectives
+   - [Claude 4 System Card](https://www.anthropic.com/claude-4-system-card) — Claude Opus 4 / Sonnet 4, covers ASL-3 deployment, post-training RL, and how safety evaluations work at the frontier
+   - [Claude Opus 4.5 System Card](https://www.anthropic.com/claude-opus-4-5-system-card) — the most recent comprehensive system card, described as Anthropic's most robustly aligned model; includes detailed capability and safety evaluations
 
 ### How computer use training actually works
 
