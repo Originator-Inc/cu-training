@@ -1,5 +1,38 @@
 # Computer Use Training — Roadmap
 
+## 5-Day Research Program (~2 hrs/day)
+
+### Day 1 — Foundations: Where Computer Use Fits in the Training Stack
+- **Read:** Raschka's "New LLM Pre-training and Post-training Paradigms" — map the full pre-train → mid-train → SFT → RLHF → RLVR pipeline
+- **Read:** DeepSeek-R1 (sections 2–3 only) — understand GRPO and single-turn RLVR
+- **Goal:** Be able to draw the training ladder from scratch and explain why multi-turn agent RL is harder than single-turn
+
+### Day 2 — Core Papers: How Computer Use RL Actually Works
+- **Read:** ComputerRL paper — full pipeline, Entropulse trick, API-GUI paradigm
+- **Read:** WebAgent-R1 — minimal viable multi-turn GRPO (binary rewards, no reward model)
+- **Skim:** WebRL if time allows — curriculum learning and outcome reward models
+- **Goal:** Understand the two main approaches (minimal GRPO vs. full infrastructure) and their tradeoffs
+
+### Day 3 — Hands-On: Run Claude CUA and Qwen3-VL Locally
+- **Set up:** Docker VM with VNC (`anthropic-quickstarts:computer-use-demo`)
+- **Test:** Claude CUA on 2–3 manual tasks via the web UI — observe how it plans and acts
+- **Test:** Serve Qwen3-VL-8B via vLLM, run against the same tasks (or use OpenCUA wrapper)
+- **Goal:** First-hand feel for where each model succeeds/fails, action latency, token costs
+
+### Day 4 — Evaluation: OSWorld and Side-by-Side Comparison
+- **Set up:** OSWorld with a small task subset (5–10 tasks)
+- **Run:** Claude and Qwen3-VL against the same tasks, collect trajectories
+- **Review:** Compare trajectories side-by-side (screenshots + actions in result dirs)
+- **Goal:** Quantify the gap — where does Qwen3-VL fail that Claude succeeds? What patterns emerge?
+
+### Day 5 — SDPO & Training Plan: Chart the Path Forward
+- **Read:** UI-TARS-2 and DART-GUI papers — PPO stabilization tricks, decoupled async training
+- **Review:** verl → verl-agent → SDPO repo stack, read the example scripts
+- **Draft:** Concrete fine-tuning plan — what data, what hardware, what the self-teacher prompt looks like for GUI failures
+- **Goal:** Have a written 1-pager on "how we'd run SDPO on Qwen3-VL for computer use" ready for team review
+
+---
+
 ## Pre-Reading / Research
 
 Here's the absolute essentials, in reading order:
@@ -188,10 +221,10 @@ python data/process_trajectories.py --input ./agentnet_data --output ./sft_data
 
 ### 1. Base Model
 
-**Qwen2.5-VL-7B-Instruct** is the sweet spot to start. It already has computer use and phone use capabilities baked in from Qwen's training — grounding (bounding boxes, points), agentic tool use, screenshot understanding. Available in 3B/7B/32B/72B sizes.
+**Qwen3-VL-8B** is the recommended starting point — it's the latest in the Qwen VL series, already supported by verl-agent, and inherits the computer use and phone use capabilities from Qwen2.5-VL (grounding, agentic tool use, screenshot understanding).
 
-- Model cards: [Qwen2.5-VL-7B](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct), [3B](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct), [32B](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct), [72B](https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct)
-- Also consider **Qwen3-VL** which is newer and already supported by verl-agent
+- Qwen3-VL: [Qwen3-VL-8B](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct)
+- Fallback / reference: [Qwen2.5-VL-7B](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct), [3B](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct), [32B](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct), [72B](https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct)
 
 ### 2. Training Framework Stack
 
@@ -240,7 +273,7 @@ The SDPO paper is LLM-only, but the approach maps naturally to computer use beca
 
 The rough plan would be:
 
-1. Start with verl-agent's multi-turn GRPO setup with Qwen2.5-VL-7B on OSWorld
+1. Start with verl-agent's multi-turn GRPO setup with Qwen3-VL-8B on OSWorld
 2. Get baseline working with binary task-completion rewards
 3. Port SDPO's advantage computation from the `lasgroup/SDPO` repo into verl-agent's trainer
 4. Design the self-teacher template: on failed trajectories, feed the model its own action history + final failure screenshot/state + any error messages, and compute logit divergences to identify where the policy should have acted differently
