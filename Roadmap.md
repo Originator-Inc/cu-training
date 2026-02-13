@@ -46,15 +46,19 @@ Here's the absolute essentials, in reading order:
 
 2. **DeepSeek-R1 paper (Jan 2025)** — [arxiv.org/abs/2501.12948](https://arxiv.org/abs/2501.12948) — Read sections 2 and 3 only. You need to understand GRPO and how single-turn RLVR works before you can understand why multi-turn agent RL is harder. This is the baseline everything else extends from.
 
+3. **Anthropic — "Core Views on AI Safety"** + the training/RLHF technical blog posts. Anthropic's blog has some of the clearest writing on constitutional AI, RLHF, and post-training alignment. In particular:
+   - [Constitutional AI: Harmlessness from AI Feedback](https://arxiv.org/abs/2212.08073) — how to do RLHF without human preference labels for harmlessness, using AI-generated critiques instead
+   - [The Claude 3 Model Card](https://www-cdn.anthropic.com/de8ba9b01c9ab7cbabf5c33b80b7bbc618857627/Model_Card_Claude_3.pdf) — detailed breakdown of post-training RL, how it shapes behavior at the frontier, and the interplay between helpfulness and safety objectives
+
 ### How computer use training actually works
 
-3. **ComputerRL paper (Aug 2025)** — [arxiv.org/abs/2508.14040](https://arxiv.org/abs/2508.14040) — This is the single most important paper. Current SOTA on OSWorld (48.1%). Covers the full pipeline: SFT warm-up from trajectory data → online RL in parallel virtual desktops → the Entropulse trick (alternating RL/SFT to prevent entropy collapse). Also introduces the API-GUI paradigm which is how frontier agents actually operate — they don't just click pixels, they mix programmatic calls with GUI actions.
+4. **ComputerRL paper (Aug 2025)** — [arxiv.org/abs/2508.14040](https://arxiv.org/abs/2508.14040) — This is the single most important paper. Current SOTA on OSWorld (48.1%). Covers the full pipeline: SFT warm-up from trajectory data → online RL in parallel virtual desktops → the Entropulse trick (alternating RL/SFT to prevent entropy collapse). Also introduces the API-GUI paradigm which is how frontier agents actually operate — they don't just click pixels, they mix programmatic calls with GUI actions.
 
-4. **WebAgent-R1 (May 2025)** — [arxiv.org/abs/2505.16421](https://arxiv.org/abs/2505.16421) — The cleanest demonstration of pure end-to-end multi-turn RL for browser use. No auxiliary reward models, no replay buffers — just binary task-success rewards and on-policy GRPO. Read this to understand the minimal viable approach.
+5. **WebAgent-R1 (May 2025)** — [arxiv.org/abs/2505.16421](https://arxiv.org/abs/2505.16421) — The cleanest demonstration of pure end-to-end multi-turn RL for browser use. No auxiliary reward models, no replay buffers — just binary task-success rewards and on-policy GRPO. Read this to understand the minimal viable approach.
 
-5. **WebRL (ICLR 2025)** — [arxiv.org/abs/2411.02337](https://arxiv.org/abs/2411.02337) — Read if you have time. Adds curriculum learning (auto-generating harder tasks from failures) and a trained outcome reward model. More complex than WebAgent-R1 but shows what you gain from richer training infrastructure.
+6. **WebRL (ICLR 2025)** — [arxiv.org/abs/2411.02337](https://arxiv.org/abs/2411.02337) — Read if you have time. Adds curriculum learning (auto-generating harder tasks from failures) and a trained outcome reward model. More complex than WebAgent-R1 but shows what you gain from richer training infrastructure.
 
-That's it. Five items. The reading order matters: 1 gives you the map, 2 gives you the RL fundamentals, 3–4 are the actual computer use training methods, 5 is bonus depth.
+That's seven items. The reading order matters: 1–3 give you the map and RL fundamentals (including how frontier RLHF actually works at Anthropic), 4–6 are the actual computer use training methods, 7 is bonus depth.
 
 > **Core mental model:** computer use training = multi-turn GRPO where the "verifiable reward" is task completion in a simulated environment (VM or browser), and the main engineering challenges are parallelizing thousands of environments, preventing entropy collapse over long rollouts, and designing action spaces that mix API calls with GUI interactions.
 
