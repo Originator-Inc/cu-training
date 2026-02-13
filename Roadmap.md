@@ -181,3 +181,69 @@ python data/process_trajectories.py --input ./agentnet_data --output ./sft_data
 ```
 
 **RL fine-tuning** (advanced): For RL on top of SFT, look at **EvoCUA** (Meituan) which achieved 56.7% on OSWorld-Verified using RL-augmented training on top of open-source VLMs, or **WebAgent-R1** for browser-specific multi-turn GRPO.
+
+---
+
+## SDPO for Computer Use — Quick Reference
+
+### 1. Base Model
+
+**Qwen2.5-VL-7B-Instruct** is the sweet spot to start. It already has computer use and phone use capabilities baked in from Qwen's training — grounding (bounding boxes, points), agentic tool use, screenshot understanding. Available in 3B/7B/32B/72B sizes.
+
+- Model cards: [Qwen2.5-VL-7B](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct), [3B](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct), [32B](https://huggingface.co/Qwen/Qwen2.5-VL-32B-Instruct), [72B](https://huggingface.co/Qwen/Qwen2.5-VL-72B-Instruct)
+- Also consider **Qwen3-VL** which is newer and already supported by verl-agent
+
+### 2. Training Framework Stack
+
+You need three layers:
+
+**verl** (core RL training) → [github.com/verl-project/verl](https://github.com/verl-project/verl)
+- Has a ready-made VLM GRPO example script: `run_qwen2_5_vl-7b.sh`
+- Handles FSDP2 training + vLLM/SGLang rollouts, LoRA support, VLM RL natively
+
+**verl-agent** (multi-turn agentic RL extension) → [github.com/langfengQ/verl-agent](https://github.com/langfengQ/verl-agent)
+- Built on verl, adds multi-turn interaction loops, customizable memory modules, per-step input structure
+- Already supports Qwen2.5-VL and Qwen3-VL with LoRA (7B on 2× H100)
+- Includes GUI environments: WebShop, AppWorld, Sokoban, Gym Cards
+- Implements GRPO, PPO, DAPO, GiGPO and more
+
+**SDPO repo** (self-distillation logic) → [github.com/lasgroup/SDPO](https://github.com/lasgroup/SDPO)
+- Built on verl, swaps advantage computation from GRPO to self-distillation
+- You'd need to port/merge the SDPO advantage computation into verl-agent's multi-turn loop
+
+### 3. Environment / Benchmark
+
+**OSWorld** → [github.com/xlang-ai/OSWorld](https://github.com/xlang-ai/OSWorld), [os-world.github.io](https://os-world.github.io)
+- 369 real computer tasks on Ubuntu VMs (Docker-based), execution-based evaluation
+- Supports parallel VM rollouts for RL training
+- The standard benchmark — UI-TARS-2 trains against it, DART-GUI evaluates on it
+
+### 4. Key Papers to Read
+
+These represent the current frontier of RL for GUI agents:
+
+- **UI-TARS-2** ([arxiv.org/abs/2509.02544](https://arxiv.org/abs/2509.02544)) — The most comprehensive work. Multi-turn PPO with stabilization tricks: decoupled GAE, length-adaptive GAE, value pretraining, reward shaping. Async rollouts on VMs. SOTA on OSWorld (47.5%). Findings: PPO > GRPO for multi-turn, VLM-as-verifier works for agent tasks.
+- **DART-GUI** ([arxiv.org/html/2509.23866v1](https://arxiv.org/html/2509.23866v1)) — Decoupled async RL training. 42.13% on OSWorld with just 7B model. Trains selectively on high-entropy steps, uses pre-collected successful trajectories to bootstrap.
+- **ARPO** — Extends GRPO with replay buffer for GUI agents, task selection strategy for stability.
+- **ZeroGUI** — No human labels needed. Uses VLMs to generate tasks AND evaluate success, two-stage RL. +14% on UI-TARS baseline.
+- **GUI agent paper list** → [github.com/OSU-NLP-Group/GUI-Agents-Paper-List](https://github.com/OSU-NLP-Group/GUI-Agents-Paper-List) — Comprehensive and actively maintained.
+
+### 5. Why SDPO Is Particularly Interesting Here
+
+The SDPO paper is LLM-only, but the approach maps naturally to computer use because:
+
+- **Rich environment feedback is already available** — screenshots show what happened after an action, error dialogs, changed UI state. This is exactly the kind of feedback SDPO's self-teacher conditions on.
+- **Dense credit assignment matters more in multi-step GUI tasks** — GRPO gives the same reward to every action in a 30-step trajectory. SDPO can identify which specific click or type was the mistake by showing the model the failure screenshot and asking "where did it go wrong?"
+- **Concise action generation** — SDPO's biggest qualitative win was generating shorter, more direct reasoning. GUI agents notoriously waste tokens on verbose "thinking" that doesn't help grounding.
+
+### 6. Practical Sketch of the Integration
+
+The rough plan would be:
+
+1. Start with verl-agent's multi-turn GRPO setup with Qwen2.5-VL-7B on OSWorld
+2. Get baseline working with binary task-completion rewards
+3. Port SDPO's advantage computation from the `lasgroup/SDPO` repo into verl-agent's trainer
+4. Design the self-teacher template: on failed trajectories, feed the model its own action history + final failure screenshot/state + any error messages, and compute logit divergences to identify where the policy should have acted differently
+5. Start with LoRA (feasible on 2× H100 per verl-agent), scale to full fine-tuning if results warrant it
+
+The main engineering challenge is **step 4** — designing the feedback-conditioned self-teacher prompt for a VLM. The SDPO paper only did this for text (code errors, test failures). For GUI tasks you'd condition on the failure screenshot and/or accessibility tree diff, which is a novel but natural extension.
