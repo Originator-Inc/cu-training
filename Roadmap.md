@@ -3,6 +3,7 @@
 ## 5-Day Research Program (~2 hrs/day)
 
 ### Day 1 — Foundations: Where Computer Use Fits in the Training Stack
+- **Read:** [training-pipeline.md](training-pipeline.md) — our writeup covering all three phases, the ~12-step ladder, and where computer use slots in at the end
 - **Read:** Raschka's "New LLM Pre-training and Post-training Paradigms" — map the full pre-train → mid-train → SFT → RLHF → RLVR pipeline
 - **Read:** DeepSeek-R1 (sections 2–3 only) — understand GRPO and single-turn RLVR
 - **Goal:** Be able to draw the training ladder from scratch and explain why multi-turn agent RL is harder than single-turn
@@ -34,6 +35,8 @@
 ---
 
 ## Pre-Reading / Research
+
+> **Start here:** [training-pipeline.md](training-pipeline.md) — full writeup on the three training phases (~12 steps), what happens in each, how post-training breaks down into SFT + RL rounds, and exactly where computer use specialization sits at the end.
 
 Here's the absolute essentials, in reading order:
 
